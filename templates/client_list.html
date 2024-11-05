@@ -3,7 +3,100 @@
 <h1>Client List</h1>
 <ul>
     {% for client in clients %}
+    <div class="client" id="client-{{ client.id }}">
         <li><a href="{{ url_for('client_page', client_id=client.id) }}">{{ client.full_name }}</a></li>
-    {% endfor %}
+      
+  
+      <!-- Edit Button -->
+      <button onclick="showEditForm({{ client.id }})" class="edit">Edit</button>
+  
+      <!-- Delete Button -->
+      <button onclick="confirmDeleteClient({{ client.id }})" class="delete">Delete</button>
+  
+      <!-- Hidden Edit Form -->
+      <div id="edit-form-{{ client.id }}" class="edit-form" style="display: none;">
+        <h4>Edit Client</h4>
+        <label>Full Name:</label>
+        <input type="text" id="edit-full-name-{{ client.id }}" value="{{ client.full_name }}">
+        
+        <label>Email:</label>
+        <input type="email" id="edit-email-{{ client.id }}" value="{{ client.email }}">
+  
+        <label>Phone:</label>
+        <input type="text" id="edit-phone-{{ client.id }}" value="{{ client.phone }}">
+  
+        <label>Location:</label>
+        <input type="text" id="edit-location-{{ client.id }}" value="{{ client.location }}">
+  
+        <label>Gender:</label>
+        <input type="text" id="edit-gender-{{ client.id }}" value="{{ client.gender }}">
+  
+        <button onclick="saveClientEdit({{ client.id }})">Save</button>
+        <button onclick="hideEditForm({{ client.id }})">Cancel</button>
+      </div>
+    </div>
+  {% endfor %}
+  
+  <script>
+    // Function to confirm deletion
+    function confirmDeleteClient(clientId) {
+      if (confirm("Are you sure you want to delete this client?")) {
+        fetch(`/api/clients/${clientId}`, { method: 'DELETE' })
+          .then(response => response.json())
+          .then(data => {
+            alert(data.message);
+            document.getElementById(`client-${clientId}`).remove();  // Remove client from page
+          });
+      }
+    }
+  
+    // Function to show the edit form
+    function showEditForm(clientId) {
+      document.getElementById(`edit-form-${clientId}`).style.display = 'block';
+    }
+  
+    // Function to hide the edit form
+    function hideEditForm(clientId) {
+      document.getElementById(`edit-form-${clientId}`).style.display = 'none';
+    }
+  
+    // Function to save edited client details
+    function saveClientEdit(clientId) {
+      const fullName = document.getElementById(`edit-full-name-${clientId}`).value;
+      const email = document.getElementById(`edit-email-${clientId}`).value;
+      const phone = document.getElementById(`edit-phone-${clientId}`).value;
+      const location = document.getElementById(`edit-location-${clientId}`).value;
+      const gender = document.getElementById(`edit-gender-${clientId}`).value;
+  
+      fetch(`/api/clients/${clientId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ 
+          full_name: fullName,
+          email: email,
+          phone: phone,
+          location: location,
+          gender: gender
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        alert("Client updated successfully");
+  
+        // Update the displayed client info
+        document.getElementById(`client-${clientId}`).querySelector("h3").textContent = data.full_name;
+        document.getElementById(`client-${clientId}`).querySelector("p:nth-of-type(1)").textContent = "Email: " + data.email;
+        document.getElementById(`client-${clientId}`).querySelector("p:nth-of-type(2)").textContent = "Phone: " + data.phone;
+        document.getElementById(`client-${clientId}`).querySelector("p:nth-of-type(3)").textContent = "Location: " + data.location;
+        document.getElementById(`client-${clientId}`).querySelector("p:nth-of-type(4)").textContent = "Gender: " + data.gender;
+  
+        // Hide the edit form after saving
+        hideEditForm(clientId);
+      });
+    }
+  </script>
+  
 </ul>
 {% endblock %}
