@@ -7,6 +7,11 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///clients.db"
 app.config["SECRET_KEY"] = "secret"
 db.init_app(app)
 
+@app.route('/')
+def index():
+    return redirect(url_for('register'))
+
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     form = RegistrationForm()
